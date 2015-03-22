@@ -5,9 +5,7 @@
 package marketomusic;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import marketomusic.beans.SongFile;
 
 /**
@@ -59,6 +57,7 @@ public class MarketoMusic {
         }
 
         while (!command.equals("quit") && !command.equals("Quit")) {
+            System.out.println("\nMain Menu :-");
             System.out.println("1.Create : create <playlist name>");
             System.out.println("2.Edit : edit <playlistId>");
             System.out.println("3.Print song : song <songId>");
@@ -68,66 +67,175 @@ public class MarketoMusic {
             System.out.println("7.Sort : sort <sort option>");
             System.out.println("8.Quit : quit");
 
-            System.out.print("\nEnter your command >>> ");
+            System.out.print("\nEnter command >>> ");
             try {
                 command = in.readLine();
                 commands = command.split(" ");
 
-                if (commands.length > 1 && commands.length < 3) {
-                    if (main_menu_commands.contains(commands[0])) {
-                        switch (commands[0]) {
-                            case "create":
-                                if (playlists.contains(commands[1])) {
-                                    System.out.println("Playlist with this name already exists !!");
-                                } else {
-                                    playlists.add(commands[1]);
-                                    ArrayList<SongFile> songs = new ArrayList<SongFile>();
-                                    playlist_songs.put(commands[1], songs);
-                                    showPlayListMenu(commands[1], playlist_songs, central_store);
+                //if (commands.length > 1 && commands.length <= 3) {
+                if (main_menu_commands.contains(commands[0])) {
+                    switch (commands[0]) {
+                        case "create":
+                            if (playlists.contains(commands[1])) {
+                                System.out.println("Playlist with this name already exists !!");
+                            } else {
+                                playlists.add(commands[1]);
+                                ArrayList<SongFile> songs = new ArrayList<SongFile>();
+                                playlist_songs.put(commands[1], songs);
+                                showPlayListMenu(commands[1], playlist_songs, central_store);
+                            }
+                            break;
+
+                        case "edit":
+                            int playlistId = Integer.parseInt(commands[1]);
+                            int size = playlists.size();
+
+                            if (playlistId < size && playlistId >= 0) {
+                                String current_playlist_name = playlists.get(playlistId);
+                                showPlayListMenu(current_playlist_name, playlist_songs, central_store);
+                            } else {
+                                System.out.println("Playlist with this id does not exists !!");
+                            }
+                            break;
+
+                        case "song":
+                            int entered_songid = Integer.parseInt(commands[1]);
+                            size = central_store.size();
+
+                            if (entered_songid < size && entered_songid >= 0) {
+                                SongFile sFile = central_store.get(entered_songid);
+                                System.out.println("\nDetails about song : ");
+                                System.out.println("Id : "+sFile.getSongId()+" Artist : " + sFile.getArtist() + " Title : " + sFile.getTitle() + "\n");
+                            } else {
+                                System.out.println("Song with this id does not exists !!");
+                            }
+                            break;
+
+                        case "playlist":
+                            playlistId = Integer.parseInt(commands[1]);
+                            size = playlists.size();
+
+                            if (playlistId < size && playlistId >= 0) {
+                                String current_playlist_name = playlists.get(playlistId);
+                                if (playlist_songs.containsKey(current_playlist_name)) {
+                                    ArrayList<SongFile> songs = (ArrayList<SongFile>) playlist_songs.get(current_playlist_name);
+                                    System.out.println("Songs in " + current_playlist_name + " playlist are : ");
+                                    Iterator<SongFile> itr = songs.iterator();
+                                    while (itr.hasNext()) {
+                                        SongFile sFile = itr.next();
+                                        System.out.println("Id : "+sFile.getSongId()+" Artist : " + sFile.getArtist() + " Title : " + sFile.getTitle());
+                                    }
+                                    System.out.println();
                                 }
-                                break;
+                            } else {
+                                System.out.println("Playlist with this id does not exists !!");
+                            }
+                            break;
 
-                            case "edit":
-                                System.out.println("In edit");
-                                break;
+                        case "print":
+                            if (commands[1].equals("song")) {
+                                if (central_store != null) {
+                                    Iterator<SongFile> itr = central_store.iterator();
+                                    while (itr.hasNext()) {
+                                        SongFile sFile = itr.next();
+                                        System.out.println("Id : "+sFile.getSongId()+ " Artist : " + sFile.getArtist() + " Title : " + sFile.getTitle());
+                                    }
+                                }
 
-                            case "song":
-                                System.out.println("In song");
-                                break;
-
-                            case "playlist":
-                                System.out.println("In playlist");
-                                break;
-
-                            case "print":
-                                System.out.println("Printing names of playlists : ");
+                            } else if (commands[1].equals("playlist")) {
+                                System.out.println("Printing names and contents of each playlist : ");
                                 Iterator<String> itr = playlists.iterator();
                                 while (itr.hasNext()) {
-                                    System.out.println(itr.next());
+                                    String current_playlist_name = itr.next();
+                                    //System.out.println("Playlist name is : " + current_playlist_name);
+                                    ArrayList<SongFile> songs = (ArrayList<SongFile>) playlist_songs.get(current_playlist_name);
+                                    System.out.println("Songs in " + current_playlist_name + " playlist are : ");
+                                    Iterator<SongFile> songitr = songs.iterator();
+                                    while (songitr.hasNext()) {
+                                        SongFile sFile = songitr.next();
+                                        System.out.println("Id : "+sFile.getSongId()+ " Artist : " + sFile.getArtist() + " Title : " + sFile.getTitle());
+                                    }
                                 }
-                                break;
+                            } else {
+                                System.out.println("Wrong parameter : Either song or playlist is expected !!");
+                            }
+                            break;
 
-                            case "search":
-                                System.out.println("In search");
-                                break;
+                        case "search":
+                            String[] search_elements = command.split(" ", 3);
+                            Iterator<SongFile> itr = central_store.iterator();
+                            while (itr.hasNext()) {
+                                SongFile sFile = itr.next();
+                                if (search_elements[1].equals("artist")) {
 
-                            case "sort":
-                                System.out.println("In sort");
-                                break;
+                                    if (search_elements[2].contains("\"")) {
+                                        if (sFile.getArtist().toLowerCase().contains(search_elements[2].toLowerCase().split("\"")[1])) {
+                                            System.out.println("Id : "+sFile.getSongId()+" Artist : " + sFile.getArtist() + " Title : " + sFile.getTitle());
+                                        }
+                                    } else {
+                                        System.out.println("Search string should be entered in double quotes !!");
+                                    }
 
-                            case "quit":
-                                System.out.println("In quit");
-                                break;
+                                } else if (search_elements[1].equals("title")) {
 
-                            default:
-                                System.out.println("In default");
-                        }
-                    } else {
-                        System.out.println("You are trying to perform wrong operation !!");
+                                    if (search_elements[2].contains("\"")) {
+                                        if (sFile.getTitle().toLowerCase().contains(search_elements[2].toLowerCase().split("\"")[1])) {
+                                            System.out.println("Id : "+sFile.getSongId()+" Title : " + sFile.getTitle() + " Artist : " + sFile.getArtist());
+                                        }
+                                    } else {
+                                        System.out.println("Search string should be entered in double quotes !!");
+                                    }
+
+                                } else {
+                                    System.out.println("Wrong first parameter : Either title or artist is expected !!");
+                                }
+                            }
+                            break;
+
+                        case "sort":
+                            ArrayList<SongFile> sorted_central_store = central_store;
+                            
+                            if(commands[1].equals("artist")) {
+                                Collections.sort(sorted_central_store, new Comparator<SongFile>() {
+
+                                    @Override
+                                    public int compare(SongFile o1, SongFile o2) {
+                                        return o1.getArtist().compareTo(o2.getArtist());
+                                    }                                
+                                });
+                                
+                                System.out.println("Sorted on Artist : ");
+                                for (SongFile sFile: sorted_central_store){
+                                    System.out.println("Id : "+sFile.getSongId()+" Artist : "+sFile.getArtist()+" Title : "+sFile.getTitle());
+                                }
+                            } else if (commands[1].equals("title")) {
+                                Collections.sort(sorted_central_store, new Comparator<SongFile>() {
+
+                                    @Override
+                                    public int compare(SongFile o1, SongFile o2) {
+                                        return o1.getTitle().compareTo(o2.getTitle());
+                                    }                                
+                                });
+                                
+                                System.out.println("Sorted on Title : ");
+                                for (SongFile sFile: sorted_central_store){                                    
+                                    System.out.println("Id : "+sFile.getSongId()+" Artist : "+sFile.getArtist()+" Title : "+sFile.getTitle());
+                                }
+                            } else {
+                                System.out.println("Wrong parameter : Either title or artist is expected !!");
+                            }
+                            
+                            break;
+
+                        default:
+                            System.out.println("In default");
                     }
                 } else {
-                    System.out.println("{Usage} - command_name parameter");
+                    System.out.println("You are trying to perform wrong operation !!");
                 }
+                //} else {
+                //    System.out.println("{Usage} - command_name parameter");
+                //}
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -138,7 +246,7 @@ public class MarketoMusic {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String commands[];
         String command = "";
-        //String playlist_menu_commands[] = {"insert","delete","print","main"};
+        int size = central_store.size();
 
         ArrayList<String> playlist_menu_commands = new ArrayList<String>();
         playlist_menu_commands.add("insert");
@@ -147,7 +255,7 @@ public class MarketoMusic {
         playlist_menu_commands.add("main");
 
         while (!command.equals("main")) {
-            System.out.println("\nMenu for operations on playlist :");
+            System.out.println("\nMenu for operations on playlist :-");
             System.out.println("1.Delete : delete <songId>");
             System.out.println("2.Insert : insert <songId>");
             System.out.println("3.Print : print");
@@ -166,7 +274,7 @@ public class MarketoMusic {
                                     ArrayList<SongFile> songs = (ArrayList<SongFile>) playlist_songs.get(current_playlist_name);
                                     try {
                                         int id = Integer.parseInt(commands[1]);
-                                        int size = central_store.size();
+
                                         SongFile songFile = null;
                                         if (id > size || id < 0) {
                                             System.out.println("There is no song with this id center store !!");
@@ -196,7 +304,7 @@ public class MarketoMusic {
                                     ArrayList<SongFile> songs = (ArrayList<SongFile>) playlist_songs.get(current_playlist_name);
                                     try {
                                         int id = Integer.parseInt(commands[1]);
-                                        int size = central_store.size();
+
                                         SongFile songFile = null;
 
                                         if (id > size || id < 0) {
@@ -228,10 +336,9 @@ public class MarketoMusic {
                                     Iterator<SongFile> itr = songs.iterator();
                                     while (itr.hasNext()) {
                                         SongFile sFile = itr.next();
-                                        System.out.println("Artist : " + sFile.getArtist() + " Title : " + sFile.getTitle());
+                                        System.out.println("Id : "+sFile.getSongId()+" Artist : " + sFile.getArtist() + " Title : " + sFile.getTitle());
                                     }
                                 }
-
                                 break;
 
                             default:
@@ -248,6 +355,7 @@ public class MarketoMusic {
             }
         }
     }
+
     /*
      * private static String getPropValues(String pathToTextFile) throws
      * IOException { Properties prop = new Properties(); String propFileName =

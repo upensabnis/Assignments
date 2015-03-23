@@ -42,6 +42,9 @@ public class SongFile {
 
     public void setTitle(String title) {
         this.title = title;
-    }   
+    }
     
+    public void printSongFile(){
+        System.out.println("Id : " + this.getSongId() + "  |  " + " Artist : " + this.getArtist() + "  |  " + " Title : " + this.getTitle() + "\n");
+    }    
 }
